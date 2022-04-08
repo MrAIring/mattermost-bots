@@ -1,0 +1,7 @@
+micronaut:
+  application:
+    name: mattermostBots
+netty:
+  default:
+    allocator:
+      max-order: 3
