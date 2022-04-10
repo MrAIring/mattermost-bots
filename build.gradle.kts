@@ -1,9 +1,10 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.10"
-    id("org.jetbrains.kotlin.kapt") version "1.6.10"
-    id("org.jetbrains.kotlin.plugin.allopen") version "1.6.10"
+    id("org.jetbrains.kotlin.jvm") version "1.6.20"
+    id("org.jetbrains.kotlin.kapt") version "1.6.20"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.6.20"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.micronaut.application") version "3.3.2"
+    id("io.micronaut.aot") version "3.3.2"
 }
 
 version = "0.1"
@@ -24,6 +25,7 @@ dependencies {
     implementation("jakarta.annotation:jakarta.annotation-api")
     implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
     runtimeOnly("ch.qos.logback:logback-classic")
     compileOnly("org.graalvm.nativeimage:svm")
 
@@ -60,6 +62,13 @@ micronaut {
     processing {
         incremental(true)
         annotations("io.github.mrairing.mattermost.*")
+    }
+    aot {
+        // optimizations configuration
+        optimizeServiceLoading.set(true)
+        convertYamlToJava.set(true)
+        precomputeOperations.set(true)
+        cacheEnvironment.set(true)
     }
 }
 

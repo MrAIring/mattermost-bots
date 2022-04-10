@@ -5,3 +5,11 @@ netty:
   default:
     allocator:
       max-order: 3
+jackson:
+  deserialization:
+    READ_DATE_TIMESTAMPS_AS_NANOSECONDS: false
+
+mattermost:
+  base-url:
+  auth:
+    token:
