@@ -6,6 +6,7 @@ import io.micronaut.context.annotation.ConfigurationProperties
 class MattermostProperties {
     lateinit var baseUrl: String
     lateinit var auth: AuthProperties
+    lateinit var teamId: String
 
     @ConfigurationProperties("auth")
     class AuthProperties {
