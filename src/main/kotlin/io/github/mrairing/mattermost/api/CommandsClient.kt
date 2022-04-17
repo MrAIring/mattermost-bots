@@ -1,10 +1,13 @@
 package io.github.mrairing.mattermost.api
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.micronaut.core.annotation.Introspected
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Delete
+import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
+import io.micronaut.http.annotation.QueryValue
 import io.micronaut.http.client.annotation.Client
 import java.time.Instant
 
@@ -13,10 +16,12 @@ interface CommandsClient {
     enum class Method {
         @JsonProperty("P")
         POST,
+
         @JsonProperty("G")
         GET
     }
 
+    @Introspected
     data class CommandCreationRequest(
         @JsonProperty("team_id")
         val teamId: String,
@@ -45,25 +50,26 @@ interface CommandsClient {
      * @param description Description for this command
      * @param url The URL that is triggered
      */
+    @Introspected
     data class Command(
         /* The ID of the slash command */
         @JsonProperty("id")
         val id: String,
         /* The token which is used to verify the source of the payload */
         @JsonProperty("token")
-        val token: String,
+        val token: String? = null,
         /* The time in milliseconds the command was created */
         @JsonProperty("create_at")
-        val createAt: Instant,
+        val createAt: Instant? = null,
         /* The time in milliseconds the command was last updated */
         @JsonProperty("update_at")
-        val updateAt: Instant,
+        val updateAt: Instant? = null,
         /* The time in milliseconds the command was deleted, 0 if never deleted */
         @JsonProperty("delete_at")
-        val deleteAt: Instant,
+        val deleteAt: Instant? = null,
         /* The user id for the commands creator */
         @JsonProperty("creator_id")
-        val creatorId: String,
+        val creatorId: String? = null,
         /* The team id for which this command is configured */
         @JsonProperty("team_id")
         val teamId: String,
@@ -72,13 +78,13 @@ interface CommandsClient {
         val trigger: String,
         /* Is the trigger done with HTTP Get ('G') or HTTP Post ('P') */
         @JsonProperty("method")
-        val method: String,
+        val method: Method,
         /* What is the username for the response post */
         @JsonProperty("username")
-        val username: String,
+        val username: String? = null,
         /* The url to find the icon for this users avatar */
         @JsonProperty("icon_url")
-        val iconUrl: String,
+        val iconUrl: String? = null,
         /* Use auto complete for this command */
         @JsonProperty("auto_complete")
         val autoComplete: Boolean,
@@ -99,11 +105,17 @@ interface CommandsClient {
         val url: String
     )
 
+    @Get
+    suspend fun listCommands(
+        @QueryValue("team_id") teamId: String,
+        @QueryValue("custom_only") customOnly: Boolean
+    ): List<Command>
+
     @Post
     suspend fun createCommand(@Body request: CommandCreationRequest): Command
 
-    @Put("/{command.id}")
-    suspend fun updateCommand(@Body command: Command)
+    @Put("/{id}")
+    suspend fun updateCommand(id: String, @Body command: Command): Command
 
     @Delete("/{id}")
     suspend fun deleteCommand(id: String)

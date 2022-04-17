@@ -10,13 +10,14 @@ plugins {
 version = "0.1"
 group = "io.github.mrairing.mattermost"
 
-val kotlinVersion=project.properties.get("kotlinVersion")
+val kotlinVersion= project.properties["kotlinVersion"]
 repositories {
     mavenCentral()
 }
 
 dependencies {
     kapt("io.micronaut:micronaut-http-validation")
+    kapt("io.micronaut.data:micronaut-data-processor")
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-jackson-databind")
     implementation("io.micronaut:micronaut-runtime")
@@ -26,13 +27,18 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
-    runtimeOnly("ch.qos.logback:logback-classic")
-    compileOnly("org.graalvm.nativeimage:svm")
-
+    implementation("io.github.microutils:kotlin-logging-jvm:2.1.20")
+    implementation("io.micronaut.data:micronaut-data-r2dbc")
+    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+    implementation("io.micronaut.flyway:micronaut-flyway")
     implementation("io.micronaut:micronaut-validation")
 
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("com.h2database:h2")
+    runtimeOnly("io.r2dbc:r2dbc-h2")
 
+    compileOnly("org.graalvm.nativeimage:svm")
 }
 
 
@@ -47,11 +53,13 @@ tasks {
     compileKotlin {
         kotlinOptions {
             jvmTarget = "17"
+            javaParameters = true
         }
     }
     compileTestKotlin {
         kotlinOptions {
             jvmTarget = "17"
+            javaParameters = true
         }
     }
 }

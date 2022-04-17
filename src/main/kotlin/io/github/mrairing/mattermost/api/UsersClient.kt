@@ -1,10 +1,12 @@
 package io.github.mrairing.mattermost.api
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.micronaut.core.annotation.Introspected
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.client.annotation.Client
+import java.time.Instant
 
 @Client("\${mattermost.base-url}/api/v4/users")
 interface UsersClient {
@@ -33,18 +35,19 @@ interface UsersClient {
      * @param termsOfServiceId ID of accepted terms of service, if any. This field is not present if empty.
      * @param termsOfServiceCreateAt The time in milliseconds the user accepted the terms of service
      */
+    @Introspected
     data class User(
         @JsonProperty("id")
         val id: String? = null,
         /* The time in milliseconds a user was created */
         @JsonProperty("create_at")
-        val createAt: Long? = null,
+        val createAt: Instant? = null,
         /* The time in milliseconds a user was last updated */
         @JsonProperty("update_at")
-        val updateAt: Long? = null,
+        val updateAt: Instant? = null,
         /* The time in milliseconds a user was deleted */
         @JsonProperty("delete_at")
-        val deleteAt: Long? = null,
+        val deleteAt: Instant? = null,
         @JsonProperty("username")
         val username: String? = null,
         @JsonProperty("first_name")
@@ -68,9 +71,9 @@ interface UsersClient {
         @JsonProperty("props")
         val props: Any? = null,
         @JsonProperty("last_password_update")
-        val lastPasswordUpdate: Int? = null,
+        val lastPasswordUpdate: Instant? = null,
         @JsonProperty("last_picture_update")
-        val lastPictureUpdate: Int? = null,
+        val lastPictureUpdate: Instant? = null,
         @JsonProperty("failed_attempts")
         val failedAttempts: Int? = null,
         @JsonProperty("mfa_active")
@@ -95,6 +98,7 @@ interface UsersClient {
      * @param channel Set to \"true\" to enable channel-wide notifications (@channel, @all, etc.), \"false\" to disable. Defaults to \"true\".
      * @param firstName Set to \"true\" to enable mentions for first name. Defaults to \"true\" if a first name is set, \"false\" otherwise.
      */
+    @Introspected
     data class UserNotifyProps(
         /* Set to \"true\" to enable email notifications, \"false\" to disable. Defaults to \"true\". */
         @JsonProperty("email")
@@ -125,6 +129,7 @@ interface UsersClient {
      * @param manualTimezone Value when setting manually the timezone, i.e. \"Europe/Berlin\".
      * @param automaticTimezone This value is set automatically when the \"useAutomaticTimezone\" is set to \"true\".
      */
+    @Introspected
     data class Timezone(
         /* Set to \"true\" to use the browser/system timezone, \"false\" to set manually. Defaults to \"true\". */
         @JsonProperty("useAutomaticTimezone")

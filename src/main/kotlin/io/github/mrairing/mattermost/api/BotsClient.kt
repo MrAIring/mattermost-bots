@@ -1,6 +1,7 @@
 package io.github.mrairing.mattermost.api
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.micronaut.core.annotation.Introspected
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
@@ -9,6 +10,7 @@ import java.time.Instant
 
 @Client("\${mattermost.base-url}/api/v4/bots")
 interface BotsClient {
+    @Introspected
     data class BotCreationRequest(
         val username: String,
         @JsonProperty("display_name")
@@ -16,6 +18,7 @@ interface BotsClient {
         val description: String?
     )
 
+    @Introspected
     data class Bot(
         @JsonProperty("user_id")
         val userId: String,
