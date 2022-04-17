@@ -1,7 +1,6 @@
 package io.github.mrairing.mattermost.endpoints
 
 import io.github.mrairing.mattermost.services.CommandsTokenVerifier
-import io.micronaut.core.annotation.Introspected
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
@@ -16,7 +15,6 @@ class CommandsEndpoint(
 ) {
     private val log = logger {}
 
-    @Introspected
     data class WebhookCommandRequest(
         val channel_id: String,
         val channel_name: String,

@@ -1,7 +1,6 @@
 package io.github.mrairing.mattermost.api
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.micronaut.core.annotation.Introspected
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
@@ -21,7 +20,6 @@ interface CommandsClient {
         GET
     }
 
-    @Introspected
     data class CommandCreationRequest(
         @JsonProperty("team_id")
         val teamId: String,
@@ -50,7 +48,6 @@ interface CommandsClient {
      * @param description Description for this command
      * @param url The URL that is triggered
      */
-    @Introspected
     data class Command(
         /* The ID of the slash command */
         @JsonProperty("id")

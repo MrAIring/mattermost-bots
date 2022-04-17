@@ -1,7 +1,6 @@
 package io.github.mrairing.mattermost.api
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.micronaut.core.annotation.Introspected
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Put
@@ -35,7 +34,6 @@ interface UsersClient {
      * @param termsOfServiceId ID of accepted terms of service, if any. This field is not present if empty.
      * @param termsOfServiceCreateAt The time in milliseconds the user accepted the terms of service
      */
-    @Introspected
     data class User(
         @JsonProperty("id")
         val id: String? = null,
@@ -98,7 +96,6 @@ interface UsersClient {
      * @param channel Set to \"true\" to enable channel-wide notifications (@channel, @all, etc.), \"false\" to disable. Defaults to \"true\".
      * @param firstName Set to \"true\" to enable mentions for first name. Defaults to \"true\" if a first name is set, \"false\" otherwise.
      */
-    @Introspected
     data class UserNotifyProps(
         /* Set to \"true\" to enable email notifications, \"false\" to disable. Defaults to \"true\". */
         @JsonProperty("email")
@@ -129,7 +126,6 @@ interface UsersClient {
      * @param manualTimezone Value when setting manually the timezone, i.e. \"Europe/Berlin\".
      * @param automaticTimezone This value is set automatically when the \"useAutomaticTimezone\" is set to \"true\".
      */
-    @Introspected
     data class Timezone(
         /* Set to \"true\" to use the browser/system timezone, \"false\" to set manually. Defaults to \"true\". */
         @JsonProperty("useAutomaticTimezone")
