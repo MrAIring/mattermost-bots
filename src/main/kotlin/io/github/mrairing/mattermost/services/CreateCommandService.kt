@@ -1,7 +1,10 @@
 package io.github.mrairing.mattermost.services
 
-import io.github.mrairing.mattermost.api.CommandsClient
-import io.github.mrairing.mattermost.api.UsersClient
+import io.github.mrairing.mattermost.api.commands.CommandsClient
+import io.github.mrairing.mattermost.api.commands.dto.Command
+import io.github.mrairing.mattermost.api.commands.dto.CommandCreationRequest
+import io.github.mrairing.mattermost.api.commands.dto.Method
+import io.github.mrairing.mattermost.api.users.UsersClient
 import io.github.mrairing.mattermost.properties.MattermostProperties
 import io.github.mrairing.mattermost.properties.WebhookProperties
 import io.micronaut.runtime.event.annotation.EventListener
@@ -41,14 +44,16 @@ class CreateCommandService(
                 }
             }
         }
-
     }
 
-    private suspend fun updateCommand(id: String, commandProperties: WebhookProperties.GroupCommandProperties): CommandsClient.Command {
+    private suspend fun updateCommand(
+        id: String,
+        commandProperties: WebhookProperties.GroupCommandProperties
+    ): Command {
         log.info { "Updating command ${commandProperties.trigger}" }
 
         val updated = commandsClient.updateCommand(
-            id, CommandsClient.Command(
+            id, Command(
                 id = id,
                 teamId = mattermostProperties.teamId,
                 trigger = commandProperties.trigger,
@@ -58,19 +63,26 @@ class CreateCommandService(
                 displayName = commandProperties.displayName,
                 description = commandProperties.description,
                 url = "${webhookProperties.baseUrl}/commands/${commandProperties.trigger}",
-                method = CommandsClient.Method.POST,
+                method = Method.P,
+                iconUrl = null,
+                createAt = null,
+                updateAt = null,
+                deleteAt = null,
+                creatorId = null,
+                token = null,
+                username = null
             )
         )
         log.info { "Updated command: $updated" }
         return updated
     }
 
-    private suspend fun createNew(command: WebhookProperties.GroupCommandProperties): CommandsClient.Command {
+    private suspend fun createNew(command: WebhookProperties.GroupCommandProperties): Command {
         log.info { "Creating ${command.trigger} command" }
         val created = commandsClient.createCommand(
-            CommandsClient.CommandCreationRequest(
+            CommandCreationRequest(
                 teamId = mattermostProperties.teamId,
-                method = CommandsClient.Method.POST,
+                method = Method.P,
                 trigger = command.trigger,
                 url = "${webhookProperties.baseUrl}/commands/${command.trigger}"
             )
@@ -79,12 +91,14 @@ class CreateCommandService(
         return created
     }
 
-    private suspend fun listAllCommands(): List<CommandsClient.Command> {
+    private suspend fun listAllCommands(): List<Command> {
         log.info { "Request existing commands" }
-        return commandsClient.listCommands(mattermostProperties.teamId, customOnly = true)
+        val commands = commandsClient.listCommands(mattermostProperties.teamId, customOnly = true)
+        log.trace { "Existing commands: $commands" }
+        return commands
     }
 
-    private fun findCommand(trigger: String, commandsList: List<CommandsClient.Command>): CommandsClient.Command? {
+    private fun findCommand(trigger: String, commandsList: List<Command>): Command? {
         val existingCommand = commandsList.find { trigger == it.trigger }
         log.info {
             if (existingCommand != null)
