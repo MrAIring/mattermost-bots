@@ -3,6 +3,7 @@ package io.github.mrairing.mattermost.api.commands.dto
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import io.micronaut.core.annotation.Introspected
+import net.afanasev.sekret.Secret
 import java.time.Instant
 
 /**
@@ -31,6 +32,7 @@ data class Command(
     /* The ID of the slash command */
     val id: String,
     /* The token which is used to verify the source of the payload */
+    @Secret
     val token: String?,
     /* The time in milliseconds the command was created */
     val createAt: Instant?,

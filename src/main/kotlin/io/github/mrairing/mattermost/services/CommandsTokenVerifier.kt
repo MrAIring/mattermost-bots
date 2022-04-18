@@ -4,15 +4,11 @@ import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 @Singleton
-class CommandsTokenVerifier {
-    private final val tokens = ConcurrentHashMap<String, String>()
+class CommandsTokenVerifier(private val commandsService: CommandsService) {
 
-    suspend fun rememberToken(commandTrigger: String, token: String) {
-        tokens[commandTrigger] = token
+    private suspend fun isValidToken(commandTrigger: String, token: String): Boolean {
+        return token == commandsService.find(commandTrigger)?.token
     }
-
-    private suspend fun isValidToken(commandTrigger: String, token: String) =
-        token == tokens[commandTrigger]
 
     suspend fun assertToken(commandTrigger: String, token: String) {
         if (!isValidToken(commandTrigger, token)) {

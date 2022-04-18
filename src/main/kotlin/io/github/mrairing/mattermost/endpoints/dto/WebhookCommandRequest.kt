@@ -1,23 +1,28 @@
 package io.github.mrairing.mattermost.endpoints.dto
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
 import io.micronaut.core.annotation.Introspected
+import net.afanasev.sekret.Secret
 import java.net.URL
 
 @Introspected
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class WebhookCommandRequest(
-    val channel_id: String,
-    val channel_name: String,
+    val channelId: String,
+    val channelName: String,
     val command: String,
-    val response_url: URL,
-    val team_domain: String,
-    val team_id: String,
+    val responseUrl: URL,
+    val teamDomain: String,
+    val teamId: String,
     val text: String,
+    @Secret
     val token: String,
-    val user_id: String,
-    val trigger_id: String?,
-    val user_name: String,
-    val channel_mentions: List<String>?,
-    val channel_mentions_ids: List<String>?,
-    val user_mentions: List<String>?,
-    val user_mentions_ids: List<String>?,
+    val userId: String,
+    val triggerId: String?,
+    val userName: String,
+    val channelMentions: List<String>?,
+    val channelMentionsIds: List<String>?,
+    val userMentions: List<String>?,
+    val userMentionsIds: List<String>?,
 )

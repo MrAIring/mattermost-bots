@@ -29,6 +29,8 @@ r2dbc:
   datasources:
     default:
       url: r2dbc:h2:file:///${db.file}
+      username: sa
+      password: ''
 webhook:
   base-url:
   commands:

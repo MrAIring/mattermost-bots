@@ -21,7 +21,7 @@ class CreateCommandService(
     private val usersClient: UsersClient,
     private val mattermostProperties: MattermostProperties,
     private val webhookProperties: WebhookProperties,
-    private val commandsTokenVerifier: CommandsTokenVerifier,
+    private val commandsService: CommandsService,
 ) {
     private val log = logger {}
 
@@ -40,7 +40,7 @@ class CreateCommandService(
                 launch {
                     val command = findCommand(c.trigger, commandsList) ?: createNew(c)
                     val updated = updateCommand(command.id, c)
-                    commandsTokenVerifier.rememberToken(c.trigger, checkNotNull(updated.token))
+                    commandsService.save(updated)
                 }
             }
         }

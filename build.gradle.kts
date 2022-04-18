@@ -5,6 +5,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.micronaut.application") version "3.3.2"
     id("io.micronaut.aot") version "3.3.2"
+    id("net.afanasev.sekret") version "0.1.1"
 }
 
 version = "0.1"
@@ -38,7 +39,9 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     runtimeOnly("io.r2dbc:r2dbc-h2")
 
+
     compileOnly("org.graalvm.nativeimage:svm")
+    compileOnly("net.afanasev:sekret-annotation:0.1.1")
 }
 
 
