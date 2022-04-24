@@ -1,8 +1,11 @@
 package io.github.mrairing.mattermost.api.users
 
 import io.github.mrairing.mattermost.api.users.dto.User
+import io.github.mrairing.mattermost.api.users.dto.UserAccessToken
+import io.github.mrairing.mattermost.api.users.dto.UserAccessTokenDescription
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.client.annotation.Client
 
@@ -17,4 +20,7 @@ interface UsersClient {
 
     @Put("/{id}/patch")
     suspend fun patchUser(id: String, @Body patch: User): User
+
+    @Post("/{id}/tokens")
+    suspend fun createUserAccessToken(id: String, @Body description: UserAccessTokenDescription): UserAccessToken
 }

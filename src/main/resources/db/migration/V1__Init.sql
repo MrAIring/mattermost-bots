@@ -9,6 +9,7 @@ create table groups
 (
     id    int auto_increment primary key,
     mm_id varchar(30) not null unique,
+    token varchar(30) not null,
     name  varchar(50) not null unique
 );
 
