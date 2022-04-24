@@ -28,6 +28,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.1")
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.20")
     implementation("io.micronaut.data:micronaut-data-r2dbc")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
