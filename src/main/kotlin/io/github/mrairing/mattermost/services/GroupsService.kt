@@ -24,6 +24,7 @@ class GroupsService(
 ) {
     private val deletePrefix = "yes i'm sure i want to delete "
     private val nameRegex = "[a-z_\\-.]{3,22}".toRegex()
+    private val operationRegex = "(?<groupName>[a-z.\\-_]{3,22})\\s+(?<operation>add|remove) .+".toRegex()
 
     suspend fun groupCreate(data: WebhookCommandRequest): WebhookCommandResponse {
         val groupName = data.text.trim()
@@ -113,7 +114,7 @@ class GroupsService(
     }
 
     private fun noSuchGroup(groupName: String): WebhookCommandResponse {
-        return ephemeralResponse("Group with name `$groupName` not found. Nothing to delete")
+        return ephemeralResponse("Group with name `$groupName` not found")
     }
 
     private suspend fun deleteGroup(groupEntity: GroupEntity): WebhookCommandResponse {
@@ -126,6 +127,41 @@ class GroupsService(
     }
 
     suspend fun groupEdit(data: WebhookCommandRequest): WebhookCommandResponse {
+        val text = data.text.trim()
+        val matchResult = operationRegex.matchEntire(text)
+        return if (matchResult != null) {
+            val groupName = matchResult.groups["groupName"]!!.value
+            val operation = matchResult.groups["operation"]!!.value
+
+            val groupEntity = groupsRepository.findByName(groupName)
+            if (groupEntity != null) {
+                if (operation == "add") {
+                    addToGroup(groupEntity, data)
+                } else {
+                    removeFromGroup(groupEntity, data)
+                }
+            } else {
+                noSuchGroup(groupName)
+            }
+        } else {
+            groupEditHelp()
+        }
+    }
+
+    private fun groupEditHelp(): WebhookCommandResponse {
+        return ephemeralResponse(
+            "." +
+                    " Example:\n" +
+                    "/group-edit my-group-name add @user1 @user2 @group1\n" +
+                    "/group-edit my-group-name remove @user1 @user2 @group1"
+        )
+    }
+
+    private fun removeFromGroup(groupEntity: GroupEntity, data: WebhookCommandRequest): WebhookCommandResponse {
+        TODO("Not yet implemented")
+    }
+
+    private fun addToGroup(groupEntity: GroupEntity, data: WebhookCommandRequest): WebhookCommandResponse {
         TODO("Not yet implemented")
     }
 }
