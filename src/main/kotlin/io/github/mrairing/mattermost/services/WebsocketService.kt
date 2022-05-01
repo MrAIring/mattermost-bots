@@ -16,7 +16,7 @@ class WebsocketService(
 ) {
     private val log = logger {}
 
-    @EventListener
+//    @EventListener
     fun onStartup(event: ServerStartupEvent) {
         runBlocking {
             for (i in 1..100) {

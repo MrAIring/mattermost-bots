@@ -13,17 +13,11 @@ create table groups
     name  varchar(50) not null unique
 );
 
-create table users
-(
-    id    int auto_increment primary key,
-    mm_id varchar(30) not null unique
-);
-
 create table groups_users
 (
-    group_id int not null references groups (id),
-    user_id  int not null references users (id),
-    primary key (group_id, user_id)
+    group_id   int         not null references groups (id),
+    user_mm_id varchar(30) not null,
+    primary key (group_id, user_mm_id)
 );
 
 create table groups_groups

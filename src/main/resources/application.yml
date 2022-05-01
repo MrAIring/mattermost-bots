@@ -31,6 +31,11 @@ r2dbc:
       url: r2dbc:h2:file:///${db.file}
       username: sa
       password: ''
+jooq:
+  r2dbc-datasources:
+    default:
+      sql-dialect: H2
+
 webhook:
   base-url:
   commands:
