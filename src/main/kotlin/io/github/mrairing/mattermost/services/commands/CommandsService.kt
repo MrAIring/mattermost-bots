@@ -1,4 +1,4 @@
-package io.github.mrairing.mattermost.services
+package io.github.mrairing.mattermost.services.commands
 
 import io.github.mrairing.mattermost.api.commands.dto.Command
 import io.github.mrairing.mattermost.jooq.Tables.COMMANDS

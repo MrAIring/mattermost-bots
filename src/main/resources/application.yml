@@ -45,12 +45,12 @@ webhook:
       display-name: 'group-create'
       description: 'Creates a new group'
     - trigger: group-delete
-      auto-complete-hint: "yes i'm sure i want to delete groupname"
+      auto-complete-hint: "yes i'm sure i want to delete @groupname"
       auto-complete-desc: 'Deletes group'
       display-name: 'group-delete'
       description: 'Deletes a group'
     - trigger: group-edit
-      auto-complete-hint: 'groupname (add|remove) @username1 @username2 @username3'
+      auto-complete-hint: '@groupname (add|remove) @username1 @username2 @username3'
       auto-complete-desc: 'Add or remove users to/from group @groupname'
       display-name: 'group-edit'
       description: 'Add or remove users to/from group'

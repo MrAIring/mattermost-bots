@@ -23,4 +23,7 @@ interface UsersClient {
 
     @Post("/{id}/tokens")
     suspend fun createUserAccessToken(id: String, @Body description: UserAccessTokenDescription): UserAccessToken
+
+    @Post("/ids")
+    suspend fun getUsersByIds(@Body ids: List<String>): List<User>
 }

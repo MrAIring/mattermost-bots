@@ -77,4 +77,13 @@ class GroupsDao(private val db: DSLContext) {
             .map { it.value1() }
             .toList()
     }
+
+    suspend fun findAllUserMMIds(groupId: Int): List<String> {
+        return db.select(GROUPS_USERS.USER_MM_ID)
+            .from(GROUPS_USERS)
+            .where(GROUPS_USERS.GROUP_ID.eq(groupId))
+            .asFlow()
+            .map { it.value1() }
+            .toList()
+    }
 }

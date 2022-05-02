@@ -1,4 +1,4 @@
-package io.github.mrairing.mattermost.services
+package io.github.mrairing.mattermost.services.groups
 
 import io.github.mrairing.mattermost.api.bots.BotsClient
 import io.github.mrairing.mattermost.api.bots.dto.BotCreationRequest
@@ -11,8 +11,19 @@ import io.github.mrairing.mattermost.endpoints.dto.WebhookCommandRequest
 import io.github.mrairing.mattermost.endpoints.dto.WebhookCommandResponse
 import io.github.mrairing.mattermost.jooq.tables.records.GroupsRecord
 import io.github.mrairing.mattermost.properties.MattermostProperties
+import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupAlreadyExists
+import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupCreateHelp
+import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupCreateResponse
+import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupDeleteHelp
+import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupEditHelp
+import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupEditResponse
+import io.github.mrairing.mattermost.services.groups.GroupsResponses.invalidGroupName
+import io.github.mrairing.mattermost.services.groups.GroupsResponses.noSuchGroup
 import io.github.mrairing.mattermost.utils.WebhookUtils.ephemeralResponse
 import jakarta.inject.Singleton
+
+const val deletePrefix = "yes i'm sure i want to delete "
+const val nameRegexStr = "[a-z_\\-0-9.]{3,22}"
 
 @Singleton
 class GroupsService(
@@ -22,13 +33,15 @@ class GroupsService(
     private val teamsClient: TeamsClient,
     private val groupsDao: GroupsDao,
 ) {
-    private val deletePrefix = "yes i'm sure i want to delete "
-    private val nameRegex = "[a-z_\\-.]{3,22}".toRegex()
-    private val operationRegex = "(?<groupName>[a-z.\\-_]{3,22})\\s+(?<operation>add|remove) .+".toRegex()
+    private val nameRegex = nameRegexStr.toRegex()
+    private val groupNameOnlyRegex = "@?(?<groupName>$nameRegex)".toRegex()
+    private val editRegex = "@?(?<groupName>$nameRegex)\\s+(?<operation>add|remove) .+".toRegex()
 
     suspend fun groupCreate(data: WebhookCommandRequest): WebhookCommandResponse {
-        val groupName = data.text.trim()
-        return if (groupName.matches(nameRegex)) {
+        val text = data.text.trim()
+        val matchResult = groupNameOnlyRegex.matchEntire(text)
+        return if (matchResult != null) {
+            val groupName = matchResult.groups["groupName"]!!.value
             val groupEntity = groupsDao.findByName(groupName)
             if (groupEntity != null) {
                 groupAlreadyExists(groupName)
@@ -36,20 +49,12 @@ class GroupsService(
                 createGroup(groupName)
             }
         } else {
-            if (groupName.isEmpty()) {
+            if (text.isEmpty()) {
                 groupCreateHelp()
             } else {
-                invalidGroupName(groupName)
+                invalidGroupName(text)
             }
         }
-    }
-
-    private fun groupCreateHelp(): WebhookCommandResponse {
-        return ephemeralResponse("Usage:\n/group-create my-group-name")
-    }
-
-    private fun invalidGroupName(text: String): WebhookCommandResponse {
-        return ephemeralResponse("Group name `${text}` does not match regexp `$nameRegex`")
     }
 
     private suspend fun createGroup(groupName: String): WebhookCommandResponse {
@@ -75,18 +80,18 @@ class GroupsService(
         val teamId = mattermostProperties.teamId
         teamsClient.addTeamMember(teamId, AddTeamMemberRequest(teamId, bot.userId))
 
-        return ephemeralResponse("Group with name `$groupName` created successfully")
-    }
-
-    private fun groupAlreadyExists(groupName: String): WebhookCommandResponse {
-        return ephemeralResponse("Group with name `$groupName` already exists. Please choose another name")
+        return groupCreateResponse(groupName)
     }
 
     suspend fun groupDelete(data: WebhookCommandRequest): WebhookCommandResponse {
         val text = data.text.trim()
+
         return if (text.startsWith(deletePrefix)) {
-            val groupName = text.substringAfter(deletePrefix).trim()
-            if (groupName.matches(nameRegex)) {
+            val textAfterPrefix = text.substringAfter(deletePrefix).trim()
+            val matchResult = groupNameOnlyRegex.matchEntire(textAfterPrefix)
+
+            if (matchResult != null) {
+                val groupName = matchResult.groups["groupName"]!!.value
                 val groupEntity = groupsDao.findByName(groupName)
                 if (groupEntity != null) {
                     deleteGroup(groupEntity)
@@ -94,27 +99,15 @@ class GroupsService(
                     noSuchGroup(groupName)
                 }
             } else {
-                if (groupName.isEmpty()) {
+                if (textAfterPrefix.isEmpty()) {
                     groupDeleteHelp()
                 } else {
-                    invalidGroupName(groupName)
+                    invalidGroupName(textAfterPrefix)
                 }
             }
         } else {
             groupDeleteHelp()
         }
-    }
-
-    private fun groupDeleteHelp(): WebhookCommandResponse {
-        return ephemeralResponse(
-            "To delete a group, you must add the phrase `$deletePrefix` before the group name." +
-                    " Example:\n" +
-                    "/group-delete $deletePrefix my-group-name"
-        )
-    }
-
-    private fun noSuchGroup(groupName: String): WebhookCommandResponse {
-        return ephemeralResponse("Group with name `$groupName` not found")
     }
 
     private suspend fun deleteGroup(groupEntity: GroupsRecord): WebhookCommandResponse {
@@ -131,7 +124,7 @@ class GroupsService(
 
     suspend fun groupEdit(data: WebhookCommandRequest): WebhookCommandResponse {
         val text = data.text.trim()
-        val matchResult = operationRegex.matchEntire(text)
+        val matchResult = editRegex.matchEntire(text)
         return if (matchResult != null) {
             val groupName = matchResult.groups["groupName"]!!.value
             val operation = matchResult.groups["operation"]!!.value
@@ -151,23 +144,10 @@ class GroupsService(
         }
     }
 
-    private fun groupEditHelp(): WebhookCommandResponse {
-        return ephemeralResponse(
-            " Example:\n" +
-                    "/group-edit my-group-name add @user1 @user2 @group1\n" +
-                    "/group-edit my-group-name remove @user1 @user2 @group1"
-        )
-    }
-
     private suspend fun removeFromGroup(groupEntity: GroupsRecord, data: WebhookCommandRequest): WebhookCommandResponse {
         val userMentionsIds = data.userMentionsIds?.distinct()
         if (userMentionsIds == null || userMentionsIds.isEmpty()) {
             return groupEditHelp()
-        }
-
-        val userMentionsById = mutableMapOf<String, String>()
-        data.userMentionsIds.forEachIndexed { index, mmId ->
-            userMentionsById[mmId] = data.userMentions?.get(index) ?: ""
         }
 
         val groupsNotUsers = groupsDao.findAllByMmIds(userMentionsIds)
@@ -180,23 +160,34 @@ class GroupsService(
 
         groupsDao.removeFromGroup(groupEntity.id, alreadyInGroup)
 
-        val notInGroupMentions = getMentionList(notInGroup, userMentionsById)
-        val removedMentions = getMentionList(alreadyInGroup, userMentionsById)
+        return groupEditResponse(
+            getGroupInfo(groupEntity),
+            null,
+            null,
+            alreadyInGroup,
+            notInGroup,
+            data
+        )
+    }
 
-        return ephemeralResponse("Users removed from `${groupEntity.name}`: $removedMentions\n" +
-                "Was not in group: $notInGroupMentions")
+    private suspend fun getGroupInfo(groupEntity: GroupsRecord): GroupsResponses.GroupInfo {
+        val usersInGroupIds = groupsDao.findAllUserMMIds(groupEntity.id)
+        val users = if (usersInGroupIds.isEmpty())
+            emptyList()
+        else
+            usersClient.getUsersByIds(usersInGroupIds)
 
+        return GroupsResponses.GroupInfo(
+            groupEntity.name,
+            users,
+            emptyList()
+        )
     }
 
     private suspend fun addToGroup(groupEntity: GroupsRecord, data: WebhookCommandRequest): WebhookCommandResponse {
         val userMentionsIds = data.userMentionsIds?.distinct()
         if (userMentionsIds == null || userMentionsIds.isEmpty()) {
             return groupEditHelp()
-        }
-
-        val userMentionsById = mutableMapOf<String, String>()
-        data.userMentionsIds.forEachIndexed { index, mmId ->
-            userMentionsById[mmId] = data.userMentions?.get(index) ?: ""
         }
 
         val groupsNotUsers = groupsDao.findAllByMmIds(userMentionsIds)
@@ -209,15 +200,13 @@ class GroupsService(
 
         groupsDao.addToGroup(groupEntity.id, newToGroup)
 
-        val addedMentions = getMentionList(newToGroup, userMentionsById)
-        val alreadyInGroupMentions = getMentionList(alreadyInGroup, userMentionsById)
-
-        return ephemeralResponse("Users added to `${groupEntity.name}`: $addedMentions\n" +
-                "Already in group: $alreadyInGroupMentions")
+        return groupEditResponse(
+            getGroupInfo(groupEntity),
+            newToGroup,
+            alreadyInGroup,
+            null,
+            null,
+            data
+        )
     }
-
-    private fun getMentionList(
-        userMmIds: List<String>,
-        userMentionsById: MutableMap<String, String>
-    ) = userMmIds.joinToString(", ") { "@${userMentionsById[it]}" }.ifEmpty { "none" }
 }

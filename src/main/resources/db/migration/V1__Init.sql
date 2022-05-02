@@ -15,14 +15,21 @@ create table groups
 
 create table groups_users
 (
-    group_id   int         not null references groups (id),
+    group_id   int         not null references groups (id) on delete cascade,
     user_mm_id varchar(30) not null,
     primary key (group_id, user_mm_id)
 );
 
 create table groups_groups
 (
-    group_id          int not null references groups (id),
-    included_group_id int not null references groups (id),
+    group_id          int not null references groups (id) on delete cascade,
+    included_group_id int not null references groups (id) on delete cascade,
     primary key (group_id, included_group_id)
+);
+
+create table groups_default_channels
+(
+    group_id      int         not null references groups (id) on delete cascade,
+    channel_mm_id varchar(30) not null,
+    primary key (group_id, channel_mm_id)
 );

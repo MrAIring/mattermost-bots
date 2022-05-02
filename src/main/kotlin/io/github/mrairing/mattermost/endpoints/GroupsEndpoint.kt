@@ -2,12 +2,11 @@ package io.github.mrairing.mattermost.endpoints
 
 import io.github.mrairing.mattermost.endpoints.dto.WebhookCommandRequest
 import io.github.mrairing.mattermost.endpoints.dto.WebhookCommandResponse
-import io.github.mrairing.mattermost.services.CommandsTokenVerifier
-import io.github.mrairing.mattermost.services.GroupsService
+import io.github.mrairing.mattermost.services.commands.CommandsTokenVerifier
+import io.github.mrairing.mattermost.services.groups.GroupsService
 import io.github.mrairing.mattermost.utils.WebhookUtils.ephemeralResponse
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller

@@ -1,7 +1,6 @@
-package io.github.mrairing.mattermost.services
+package io.github.mrairing.mattermost.services.commands
 
 import jakarta.inject.Singleton
-import java.util.concurrent.ConcurrentHashMap
 
 @Singleton
 class CommandsTokenVerifier(private val commandsService: CommandsService) {
