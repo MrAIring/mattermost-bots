@@ -30,20 +30,20 @@ class InviteService(
     }
 
     private suspend fun doInviteAllExcept(channelId: String, excludeUsersIds: Set<String>) {
-        var usersList: List<User>
+        var usersPage: List<User>
         val page = AtomicInteger(0)
         val excludedIds = groupsService.getAllGroupsMMIds() + excludeUsersIds
         while (true) {
-            usersList = usersClient.getUsers(
+            usersPage = usersClient.getUsers(
                 page = page.getAndIncrement(),
                 inTeam = mattermostProperties.teamId,
                 active = true
             )
-            if (usersList.isEmpty()) {
+            if (usersPage.isEmpty()) {
                 break
             }
 
-            usersList.forEach { u ->
+            usersPage.forEach { u ->
                 val userId = checkNotNull(u.id)
                 if (userId !in excludedIds) {
                     channelsClient.addUserToChannel(
