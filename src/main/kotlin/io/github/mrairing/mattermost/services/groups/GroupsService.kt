@@ -38,6 +38,10 @@ class GroupsService(
     private val groupNameOnlyRegex = "@?(?<groupName>$nameRegex)".toRegex()
     private val editRegex = "@?(?<groupName>$nameRegex)\\s+(?<operation>add|remove) .+".toRegex()
 
+    suspend fun getAllGroupsMMIds(): Set<String> {
+        return groupsDao.findAll().map { it.mmId }.toSet()
+    }
+
     suspend fun groupCreate(data: WebhookCommandRequest): WebhookCommandResponse {
         val text = data.text.trim()
         val matchResult = groupNameOnlyRegex.matchEntire(text)

@@ -59,6 +59,16 @@ webhook:
       auto-complete-desc: 'Show info about all groups or specific group @groupname'
       display-name: 'group-info'
       description: 'Show info about groups'
+    - trigger: random
+      auto-complete-hint: '@groupname [optionally] and text to tell to selected user'
+      auto-complete-desc: 'Select random user from group or from current channel, if groupname was not specified'
+      display-name: 'random'
+      description: 'Select random user'
+    - trigger: invite-all-except
+      auto-complete-hint: '@username'
+      auto-complete-desc: "Add all users to the current channel except those specified in the command's input"
+      display-name: 'invite-all-except'
+      description: "Add all users to the current channel except those specified in the command's input"
 
 mattermost:
   base-url:

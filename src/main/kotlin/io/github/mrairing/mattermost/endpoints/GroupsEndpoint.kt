@@ -49,7 +49,7 @@ class GroupsEndpoint(
         return groupsService.groupInfo(data)
     }
 
-    @Error
+    @Error(global = true)
     fun webhookError(request: HttpRequest<*>, e: Throwable): HttpResponse<WebhookCommandResponse> {
         log.error(e) { "error" }
         return HttpResponse.ok(ephemeralResponse("Error:\n${e.message}"))
