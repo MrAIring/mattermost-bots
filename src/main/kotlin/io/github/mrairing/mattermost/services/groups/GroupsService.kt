@@ -34,12 +34,19 @@ class GroupsService(
     private val teamsClient: TeamsClient,
     private val groupsDao: GroupsDao,
 ) {
-    private val nameRegex = nameRegexStr.toRegex()
-    private val groupNameOnlyRegex = "@?(?<groupName>$nameRegex)".toRegex()
-    private val editRegex = "@?(?<groupName>$nameRegex)\\s+(?<operation>add|remove) .+".toRegex()
+    private val groupNameOnlyRegex = "@?(?<groupName>$nameRegexStr)".toRegex()
+    private val editRegex = "@?(?<groupName>$nameRegexStr)\\s+(?<operation>add|remove) .+".toRegex()
 
     suspend fun getAllGroupsMMIds(): Set<String> {
         return groupsDao.findAll().map { it.mmId }.toSet()
+    }
+
+    suspend fun findByName(groupName: String): GroupsRecord? {
+        return groupsDao.findByName(groupName)
+    }
+
+    suspend fun findAllUsersMMIds(group: GroupsRecord): List<String> {
+        return groupsDao.findAllUserMMIds(group.id)
     }
 
     suspend fun groupCreate(data: WebhookCommandRequest): WebhookCommandResponse {
@@ -47,7 +54,7 @@ class GroupsService(
         val matchResult = groupNameOnlyRegex.matchEntire(text)
         return if (matchResult != null) {
             val groupName = matchResult.groups["groupName"]!!.value
-            val groupEntity = groupsDao.findByName(groupName)
+            val groupEntity = findByName(groupName)
             if (groupEntity != null) {
                 groupAlreadyExists(groupName)
             } else {
@@ -97,7 +104,7 @@ class GroupsService(
 
             if (matchResult != null) {
                 val groupName = matchResult.groups["groupName"]!!.value
-                val groupEntity = groupsDao.findByName(groupName)
+                val groupEntity = findByName(groupName)
                 if (groupEntity != null) {
                     deleteGroup(groupEntity)
                 } else {
@@ -134,7 +141,7 @@ class GroupsService(
             val groupName = matchResult.groups["groupName"]!!.value
             val operation = matchResult.groups["operation"]!!.value
 
-            val groupEntity = groupsDao.findByName(groupName)
+            val groupEntity = findByName(groupName)
             if (groupEntity != null) {
                 if (operation == "add") {
                     addToGroup(groupEntity, data)
@@ -241,7 +248,7 @@ class GroupsService(
         val matchResult = groupNameOnlyRegex.matchEntire(text)
         return if (matchResult != null) {
             val groupName = matchResult.groups["groupName"]!!.value
-            val groupEntity = groupsDao.findByName(groupName)
+            val groupEntity = findByName(groupName)
             if (groupEntity == null) {
                 noSuchGroup(groupName)
             } else {

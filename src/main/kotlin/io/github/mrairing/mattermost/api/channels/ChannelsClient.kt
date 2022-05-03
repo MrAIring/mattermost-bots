@@ -14,4 +14,7 @@ interface ChannelsClient {
 
     @Post("/channels/{channelId}/members")
     suspend fun addUserToChannel(channelId: String, @Body request: AddUserToChannelRequest): ChannelMember
+
+    @Post("/channels/{channelId}/members/ids")
+    suspend fun getChannelMembersByIds(channelId: String, @Body ids: List<String>): List<ChannelMember>
 }

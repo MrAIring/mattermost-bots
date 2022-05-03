@@ -20,4 +20,21 @@ object WebhookUtils {
             extraResponses = null,
         )
     }
+
+    fun inChannelResponse(text: String, username: String? = null, iconUrl: String? = null): WebhookCommandResponse {
+        return WebhookCommandResponse(
+            responseType = WebhookCommandResponseType.in_channel,
+            text = text,
+            username = username,
+            channelId = null,
+            iconURL = iconUrl,
+            type = null,
+            props = null,
+            gotoLocation = null,
+            triggerId = null,
+            skipSlackParsing = true,
+            attachments = null,
+            extraResponses = null,
+        )
+    }
 }
