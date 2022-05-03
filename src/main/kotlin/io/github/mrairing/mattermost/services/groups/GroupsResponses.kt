@@ -49,6 +49,21 @@ object GroupsResponses {
         val groupsDefaultChannels: List<Channel>
     )
 
+    fun groupsInfoResponse(infos: List<GroupInfo>): WebhookCommandResponse {
+        return ephemeralResponse(infos.joinToString("\n") { groupTitle(it) + groupInfo(it) })
+    }
+
+    private fun groupTitle(info: GroupInfo) = "### ${info.groupName}\n"
+
+    private fun groupInfo(info: GroupInfo) =
+        "There are currently `${info.usersInGroup.size}` users in the group `${info.groupName}`" +
+            if (info.usersInGroup.isNotEmpty())
+                info.usersInGroup
+                    .sortedBy { it.username }
+                    .joinToString(separator = " ", prefix = ":\n") { "@${it.username}" }
+            else
+                ""
+
     fun groupEditResponse(
         groupInfo: GroupInfo,
         usersAdded: List<String>?,
@@ -90,13 +105,7 @@ object GroupsResponses {
             rows += "* Was not in group: $notInGroupMentions"
         }
 
-        rows += "There are currently `${groupInfo.usersInGroup.size}` users in the group `${groupInfo.groupName}`" +
-                if (groupInfo.usersInGroup.isNotEmpty())
-                    groupInfo.usersInGroup
-                        .sortedBy { it.username }
-                        .joinToString(separator = " ", prefix = ":\n") { "@${it.username}" }
-                else
-                    ""
+        rows += groupInfo(groupInfo)
 
         return ephemeralResponse(rows.joinToString("\n"))
     }

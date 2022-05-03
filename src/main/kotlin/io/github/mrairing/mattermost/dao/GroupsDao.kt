@@ -86,4 +86,28 @@ class GroupsDao(private val db: DSLContext) {
             .map { it.value1() }
             .toList()
     }
+
+    suspend fun findAllUsersMMIdsGroupedByGroupName(): Map<String, List<String>> {
+        return db.select(GROUPS.NAME, GROUPS_USERS.USER_MM_ID)
+            .from(GROUPS).leftJoin(GROUPS_USERS).onKey()
+            .asFlow()
+            .toList()
+            .groupBy(
+                { it.value1() },
+                { it.value2() }
+            )
+            .mapValues { (_, values) ->
+                if (values.size == 1 && values[0] == null) {
+                    emptyList()
+                } else {
+                    values
+                }
+            }
+    }
+
+    suspend fun findAll(): List<GroupsRecord> {
+        return db.selectFrom(GROUPS)
+            .asFlow()
+            .toList()
+    }
 }

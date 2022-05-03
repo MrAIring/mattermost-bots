@@ -42,6 +42,13 @@ class GroupsEndpoint(
         return groupsService.groupEdit(data)
     }
 
+    @Post(uri = "/group-info", consumes = [MediaType.APPLICATION_FORM_URLENCODED])
+    suspend fun groupInfo(@Body data: WebhookCommandRequest): WebhookCommandResponse {
+        log.info { "group-info request $data" }
+        verifier.assertToken("group-info", data.token)
+        return groupsService.groupInfo(data)
+    }
+
     @Error
     fun webhookError(request: HttpRequest<*>, e: Throwable): HttpResponse<WebhookCommandResponse> {
         log.error(e) { "error" }

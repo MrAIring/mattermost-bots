@@ -17,6 +17,7 @@ import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupCreate
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupDeleteHelp
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupEditHelp
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupEditResponse
+import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupsInfoResponse
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.invalidGroupName
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.noSuchGroup
 import io.github.mrairing.mattermost.utils.WebhookUtils.ephemeralResponse
@@ -184,6 +185,27 @@ class GroupsService(
         )
     }
 
+    private suspend fun getAllGroupsInfo(): List<GroupsResponses.GroupInfo> {
+        val usersMMIdsByGroupName = groupsDao.findAllUsersMMIdsGroupedByGroupName()
+        if (usersMMIdsByGroupName.isEmpty()) {
+            return emptyList()
+        }
+
+        val allUsersMMIds = usersMMIdsByGroupName.values.asSequence().flatten().distinct().toList()
+        val allUsers = usersClient.getUsersByIds(allUsersMMIds)
+        val usersByMMId = allUsers.associateBy { it.id }
+
+        val groupInfos = usersMMIdsByGroupName.map { (groupName, userIds) ->
+            GroupsResponses.GroupInfo(
+                groupName,
+                userIds.mapNotNull { uMMId -> usersByMMId[uMMId] },
+                emptyList()
+            )
+        }
+
+        return groupInfos.sortedBy { it.groupName }
+    }
+
     private suspend fun addToGroup(groupEntity: GroupsRecord, data: WebhookCommandRequest): WebhookCommandResponse {
         val userMentionsIds = data.userMentionsIds?.distinct()
         if (userMentionsIds == null || userMentionsIds.isEmpty()) {
@@ -208,5 +230,33 @@ class GroupsService(
             null,
             data
         )
+    }
+
+    suspend fun groupInfo(data: WebhookCommandRequest): WebhookCommandResponse {
+        val text = data.text.trim()
+        val matchResult = groupNameOnlyRegex.matchEntire(text)
+        return if (matchResult != null) {
+            val groupName = matchResult.groups["groupName"]!!.value
+            val groupEntity = groupsDao.findByName(groupName)
+            if (groupEntity == null) {
+                noSuchGroup(groupName)
+            } else {
+                specificGroupInfo(groupEntity)
+            }
+        } else {
+            if (text.isEmpty()) {
+                allGroupsInfo()
+            } else {
+                invalidGroupName(text)
+            }
+        }
+    }
+
+    private suspend fun specificGroupInfo(groupEntity: GroupsRecord): WebhookCommandResponse {
+        return groupsInfoResponse(listOf(getGroupInfo(groupEntity)))
+    }
+
+    private suspend fun allGroupsInfo(): WebhookCommandResponse {
+        return groupsInfoResponse(getAllGroupsInfo())
     }
 }

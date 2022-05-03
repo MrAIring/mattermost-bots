@@ -54,6 +54,11 @@ webhook:
       auto-complete-desc: 'Add or remove users to/from group @groupname'
       display-name: 'group-edit'
       description: 'Add or remove users to/from group'
+    - trigger: group-info
+      auto-complete-hint: '@groupname [optionally]'
+      auto-complete-desc: 'Show info about all groups or specific group @groupname'
+      display-name: 'group-info'
+      description: 'Show info about groups'
 
 mattermost:
   base-url:
