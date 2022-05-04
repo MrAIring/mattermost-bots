@@ -51,7 +51,7 @@ class RandomService(
         channelId: String,
         message: String
     ): WebhookCommandResponse {
-        val users = getAllUsersInChannelExcept(channelId, senderUserId)
+        val users = getAllUsersInChannel(channelId)
         if (users.isNotEmpty()) {
             val randomUser = users.random()
             val sender = usersClient.getUser(senderUserId)
@@ -88,10 +88,10 @@ class RandomService(
         "/api/v4/users/${sender.id}/image"
     )
 
-    private suspend fun getAllUsersInChannelExcept(channelId: String, userId: String): List<User> {
+    private suspend fun getAllUsersInChannel(channelId: String): List<User> {
         var usersPage: List<User>
         val page = AtomicInteger(0)
-        val excludedIds = groupsService.getAllGroupsMMIds() + userId
+        val excludedIds = groupsService.getAllGroupsMMIds()
         val result = CopyOnWriteArrayList<User>()
         while (true) {
             usersPage = usersClient.getUsers(
