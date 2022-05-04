@@ -55,7 +55,7 @@ object GroupsResponses {
     )
 
     fun groupsInfoResponse(infos: List<GroupInfo>): WebhookCommandResponse {
-        return inChannelResponse(infos.joinToString("\n") { groupTitle(it) + groupInfo(it) })
+        return ephemeralResponse(infos.joinToString("\n") { groupTitle(it) + groupInfo(it) })
     }
 
     private fun groupTitle(info: GroupInfo) = "### ${info.groupName}\n"
