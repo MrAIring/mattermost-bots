@@ -15,13 +15,13 @@ import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupAlread
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupCreateHelp
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupCreateResponse
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupDeleteHelp
+import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupDeletedResponse
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupEditHelp
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupEditResponse
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupsInfoResponse
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.invalidGroupName
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.noSuchGroup
 import io.github.mrairing.mattermost.services.reconciliation.GroupsReconciliationService
-import io.github.mrairing.mattermost.utils.WebhookUtils.ephemeralResponse
 import jakarta.inject.Singleton
 
 const val deletePrefix = "yes i'm sure i want to delete "
@@ -136,7 +136,7 @@ class GroupsService(
         groupsDao.removeFromGroup(groupEntity.id, usersMMIds)
         groupsReconciliationService.reconcileUsers(usersMMIds)
         groupsDao.delete(groupEntity)
-        return ephemeralResponse("Deleted ${groupEntity.name}")
+        return groupDeletedResponse(groupEntity.name)
     }
 
     suspend fun groupEdit(data: WebhookCommandRequest): WebhookCommandResponse {

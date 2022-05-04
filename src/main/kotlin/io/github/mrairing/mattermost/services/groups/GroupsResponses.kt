@@ -5,6 +5,7 @@ import io.github.mrairing.mattermost.api.users.dto.User
 import io.github.mrairing.mattermost.endpoints.dto.WebhookCommandRequest
 import io.github.mrairing.mattermost.endpoints.dto.WebhookCommandResponse
 import io.github.mrairing.mattermost.utils.WebhookUtils.ephemeralResponse
+import io.github.mrairing.mattermost.utils.WebhookUtils.inChannelResponse
 
 object GroupsResponses {
     fun groupCreateHelp(): WebhookCommandResponse {
@@ -40,7 +41,11 @@ object GroupsResponses {
     }
 
     fun groupCreateResponse(groupName: String): WebhookCommandResponse {
-        return ephemeralResponse("Group with name `$groupName` created successfully")
+        return inChannelResponse(":white_check_mark: Group with name `$groupName` created successfully")
+    }
+
+    fun groupDeletedResponse(groupName: String): WebhookCommandResponse {
+        return inChannelResponse(":negative_squared_cross_mark: Group with name `$groupName` deleted successfully")
     }
 
     data class GroupInfo(
@@ -50,7 +55,7 @@ object GroupsResponses {
     )
 
     fun groupsInfoResponse(infos: List<GroupInfo>): WebhookCommandResponse {
-        return ephemeralResponse(infos.joinToString("\n") { groupTitle(it) + groupInfo(it) })
+        return inChannelResponse(infos.joinToString("\n") { groupTitle(it) + groupInfo(it) })
     }
 
     private fun groupTitle(info: GroupInfo) = "### ${info.groupName}\n"
@@ -107,6 +112,6 @@ object GroupsResponses {
 
         rows += groupInfo(groupInfo)
 
-        return ephemeralResponse(rows.joinToString("\n"))
+        return inChannelResponse(rows.joinToString("\n"))
     }
 }
