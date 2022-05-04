@@ -3,6 +3,7 @@ package io.github.mrairing.mattermost.api.users
 import io.github.mrairing.mattermost.api.users.dto.User
 import io.github.mrairing.mattermost.api.users.dto.UserAccessToken
 import io.github.mrairing.mattermost.api.users.dto.UserAccessTokenDescription
+import io.github.mrairing.mattermost.api.users.dto.UserPatchRequest
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
@@ -20,13 +21,16 @@ interface UsersClient {
     suspend fun getUser(id: String): User
 
     @Put("/{id}/patch")
-    suspend fun patchUser(id: String, @Body patch: User): User
+    suspend fun patchUser(id: String, @Body patch: UserPatchRequest): User
 
     @Post("/{id}/tokens")
     suspend fun createUserAccessToken(id: String, @Body description: UserAccessTokenDescription): UserAccessToken
 
     @Post("/ids")
-    suspend fun getUsersByIds(@Body ids: List<String>): List<User>
+    suspend fun getUsersByIds(@Body ids: Collection<String>): List<User>
+
+    @Post("/usernames")
+    suspend fun getUsersByUsernames(@Body usernames: Collection<String>): List<User>
 
     /**
      * Get users

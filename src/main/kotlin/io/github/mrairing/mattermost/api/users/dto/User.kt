@@ -2,6 +2,7 @@ package io.github.mrairing.mattermost.api.users.dto
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.micronaut.core.annotation.Introspected
 import java.time.Instant
 
@@ -49,7 +50,7 @@ data class User(
     val authService: String?,
     val roles: String?,
     val locale: String?,
-    val notifyProps: UserNotifyProps?,
+    val notifyProps: ObjectNode?,
     val props: Any?,
     val lastPasswordUpdate: Instant?,
     val lastPictureUpdate: Instant?,

@@ -66,19 +66,20 @@ class GroupsDao(private val db: DSLContext) {
             .awaitFirstOrNull()
     }
 
-    suspend fun findUserMMIdsAlreadyInGroup(usersMmIds: List<String>): List<String> {
+    suspend fun findUserMMIdsAlreadyInGroup(groupId: Int, usersMmIds: List<String>): List<String> {
         if (usersMmIds.isEmpty()) {
             return emptyList()
         }
         return db.select(GROUPS_USERS.USER_MM_ID)
             .from(GROUPS_USERS)
             .where(GROUPS_USERS.USER_MM_ID.`in`(usersMmIds))
+            .and(GROUPS_USERS.GROUP_ID.eq(groupId))
             .asFlow()
             .map { it.value1() }
             .toList()
     }
 
-    suspend fun findAllUserMMIds(groupId: Int): List<String> {
+    suspend fun findAllUsersMMIds(groupId: Int): List<String> {
         return db.select(GROUPS_USERS.USER_MM_ID)
             .from(GROUPS_USERS)
             .where(GROUPS_USERS.GROUP_ID.eq(groupId))
@@ -109,5 +110,16 @@ class GroupsDao(private val db: DSLContext) {
         return db.selectFrom(GROUPS)
             .asFlow()
             .toList()
+    }
+
+    suspend fun findAllGroupNamesGroupedByUserIds(): Map<String, List<String>> {
+        return db.select(GROUPS_USERS.USER_MM_ID, GROUPS.NAME)
+            .from(GROUPS).join(GROUPS_USERS).onKey()
+            .asFlow()
+            .toList()
+            .groupBy(
+                { it.value1() },
+                { it.value2() }
+            )
     }
 }
