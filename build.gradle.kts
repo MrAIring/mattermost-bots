@@ -57,6 +57,8 @@ dependencies {
 
     compileOnly("org.graalvm.nativeimage:svm")
     compileOnly("net.afanasev:sekret-annotation:0.1.1")
+
+    testImplementation("org.testcontainers:junit-jupiter:1.16.3")
 }
 
 
@@ -84,7 +86,7 @@ tasks {
 graalvmNative.toolchainDetection.set(false)
 micronaut {
     runtime("netty")
-    testRuntime("kotest")
+    testRuntime("junit5")
     processing {
         incremental(true)
         annotations("io.github.mrairing.mattermost.*")

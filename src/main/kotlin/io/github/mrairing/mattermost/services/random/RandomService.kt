@@ -12,6 +12,7 @@ import io.github.mrairing.mattermost.services.groups.nameRegexStr
 import io.github.mrairing.mattermost.utils.WebhookUtils.ephemeralResponse
 import io.github.mrairing.mattermost.utils.WebhookUtils.inChannelResponse
 import jakarta.inject.Singleton
+import mu.KotlinLogging.logger
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -22,6 +23,7 @@ class RandomService(
     private val channelsClient: ChannelsClient,
     private val groupsService: GroupsService,
 ) {
+    private val log = logger { }
 
     private val commandRegex = "(@(?<groupName>${nameRegexStr})\\s+)?(?<message>.+)".toRegex()
 
@@ -51,11 +53,14 @@ class RandomService(
         channelId: String,
         message: String
     ): WebhookCommandResponse {
+        log.info { "Random from channel $channelId" }
         val users = getAllUsersInChannel(channelId)
+        log.info { "There are ${users.size} members of channel $channelId" }
         if (users.isNotEmpty()) {
             val randomUser = users.random()
             val sender = usersClient.getUser(senderUserId)
 
+            log.info { "Selected random user ${randomUser.username}" }
             return randomResponse(randomUser, message, sender)
         }
         return emptyResponse()
@@ -67,13 +72,18 @@ class RandomService(
         channelId: String,
         message: String
     ): WebhookCommandResponse {
+        log.info { "Random from group ${group.name} members of channel $channelId" }
         val usersMMIds = groupsService.findAllUsersMMIds(group)
+        log.info { "There are ${usersMMIds.size} members of ${group.name}" }
         if (usersMMIds.isNotEmpty()) {
             val channelMembers = channelsClient.getChannelMembersByIds(channelId, usersMMIds)
+            log.info { "There are ${channelMembers.size} members of ${group.name} in channel $channelId" }
             if (channelMembers.isNotEmpty()) {
                 val randomMember = channelMembers.random()
                 val sender = usersClient.getUser(senderUserId)
                 val randomUser = usersClient.getUser(randomMember.userId)
+
+                log.info { "Selected random user ${randomUser.username}" }
 
                 return randomResponse(randomUser, message, sender)
             }
