@@ -133,6 +133,10 @@ jooq {
     }
 }
 
+tasks.dockerBuildNative.configure {
+    images.set(listOf("mrairing/mattermost-bots"))
+}
+
 // configure jOOQ task such that it only executes when something has changed that potentially affects the generated JOOQ sources
 // - the jOOQ configuration has changed (Jdbc, Generator, Strategy, etc.)
 // - the classpath used to execute the jOOQ generation tool has changed (jOOQ library, database driver, strategy classes, etc.)
