@@ -5,16 +5,18 @@ import io.github.mrairing.mattermost.api.users.UsersClient
 import io.github.mrairing.mattermost.api.users.dto.User
 import io.github.mrairing.mattermost.api.users.dto.UserPatchRequest
 import io.github.mrairing.mattermost.dao.GroupsDao
+import io.github.mrairing.mattermost.dao.OnDutyDao
 import io.micronaut.scheduling.annotation.Scheduled
 import jakarta.inject.Singleton
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging.logger
 
 @Singleton
-class GroupsReconciliationService(
+class ReconciliationService(
     private val groupsDao: GroupsDao,
     private val usersClient: UsersClient,
     private val objectMapper: ObjectMapper,
+    private val onDutyDao: OnDutyDao,
 ) {
     private val log = logger { }
 
@@ -25,31 +27,48 @@ class GroupsReconciliationService(
         }
     }
 
-    suspend fun reconcileUsers(userIds: List<String>? = null) {
+    suspend fun reconcileUsers(userIds: Collection<String>? = null, keywords: Set<String>? = null) {
         val groupNamesByUserIds = groupsDao.findAllGroupNamesGroupedByUserIds()
         val allGroupMentions = groupsDao.findAll().map { "@${it.name}" }.toSet()
-        val ids = userIds ?: groupNamesByUserIds.keys
+        val keywordsByUserIds = onDutyDao.findAllKeywordsGroupedByUserIds()
+        val allKeywords = keywords ?: onDutyDao.findAllKeywords()
+        val ids = userIds ?: (groupNamesByUserIds.keys + keywordsByUserIds.keys).toSet()
 
         ids.forEach { userId ->
-            reconcileUsers(userId, groupNamesByUserIds, allGroupMentions)
+            reconcileUser(userId, groupNamesByUserIds, allGroupMentions, keywordsByUserIds, allKeywords)
         }
     }
 
-    private suspend fun reconcileUsers(
+    private suspend fun reconcileUser(
         userId: String,
         groupNamesByUserIds: Map<String, List<String>>,
-        allGroupMentions: Set<String>
+        allGroupMentions: Set<String>,
+        keywordsByUserIds: Map<String, List<String>>,
+        allKeywords: Set<String>
     ) {
         val user = getUserWithNotifyProps(userId)
 
-        val currentMentionKeys = getMentionKeys(user)
         val currentGroupMentionKeys = groupNamesByUserIds[user.id]?.map { "@$it" }?.toSet() ?: emptySet()
+        val keywordMentionKeys = keywordsByUserIds[user.id] ?: emptySet()
 
-        if (currentMentionKeys.isNotEmpty() || currentGroupMentionKeys.isNotEmpty()) {
-            val nonGroupsMentionsKeys = currentMentionKeys - allGroupMentions
-            val newMentionKeys = nonGroupsMentionsKeys + currentGroupMentionKeys
+        reconcileMentionKeys(
+            user = user,
+            mentionKeys = currentGroupMentionKeys + keywordMentionKeys,
+            allTrackedMentions = allGroupMentions + allKeywords
+        )
+    }
 
-            if (currentMentionKeys != newMentionKeys) {
+    private suspend fun reconcileMentionKeys(
+        user: User,
+        mentionKeys: Set<String>,
+        allTrackedMentions: Set<String>
+    ) {
+        val allUserMentionKeys = getMentionKeys(user)
+        if (allUserMentionKeys.isNotEmpty() || mentionKeys.isNotEmpty()) {
+            val userDefinedMentionsKeys = allUserMentionKeys - allTrackedMentions
+            val newMentionKeys = userDefinedMentionsKeys + mentionKeys
+
+            if (allUserMentionKeys != newMentionKeys) {
                 setNewMentionKeys(user, newMentionKeys.joinToString(","))
             }
         }

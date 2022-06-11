@@ -69,6 +69,11 @@ webhook:
       auto-complete-desc: "Add all users to the current channel except those specified in the command's input"
       display-name: 'invite-all-except'
       description: "Add all users to the current channel except those specified in the command's input"
+    - trigger: on-duty
+      auto-complete-hint: '[@username1, [@username2] | nobody] for <keyword>'
+      auto-complete-desc: "Makes you or selected users to be on duty for some <keyword>"
+      display-name: 'on-duty'
+      description: "Makes you or selected users to be on duty for some <keyword>"
 
 mattermost:
   base-url:

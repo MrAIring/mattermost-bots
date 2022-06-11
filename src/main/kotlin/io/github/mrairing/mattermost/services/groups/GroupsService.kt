@@ -21,7 +21,7 @@ import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupEditRe
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.groupsInfoResponse
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.invalidGroupName
 import io.github.mrairing.mattermost.services.groups.GroupsResponses.noSuchGroup
-import io.github.mrairing.mattermost.services.reconciliation.GroupsReconciliationService
+import io.github.mrairing.mattermost.services.reconciliation.ReconciliationService
 import jakarta.inject.Singleton
 
 const val deletePrefix = "yes i'm sure i want to delete "
@@ -34,7 +34,7 @@ class GroupsService(
     private val botsClient: BotsClient,
     private val teamsClient: TeamsClient,
     private val groupsDao: GroupsDao,
-    private val groupsReconciliationService: GroupsReconciliationService,
+    private val reconciliationService: ReconciliationService,
 ) {
     private val groupNameOnlyRegex = "@?(?<groupName>$nameRegexStr)".toRegex()
     private val editRegex = "@?(?<groupName>$nameRegexStr)\\s+(?<operation>add|remove) .+".toRegex()
@@ -134,7 +134,7 @@ class GroupsService(
         botsClient.disableBot(botUserId)
         val usersMMIds = groupsDao.findAllUsersMMIds(groupEntity.id)
         groupsDao.removeFromGroup(groupEntity.id, usersMMIds)
-        groupsReconciliationService.reconcileUsers(usersMMIds)
+        reconciliationService.reconcileUsers(usersMMIds)
         groupsDao.delete(groupEntity)
         return groupDeletedResponse(groupEntity.name)
     }
@@ -167,16 +167,13 @@ class GroupsService(
             return groupEditHelp()
         }
 
-        val groupsNotUsers = groupsDao.findAllByMmIds(userMentionsIds)
-        val groupsIds = groupsNotUsers.map { it.mmId }.toSet()
-
-        val usersMmIds = userMentionsIds.filter { it !in groupsIds }
+        val usersMmIds = filterNotGroups(userMentionsIds)
 
         val alreadyInGroup = groupsDao.findUserMMIdsAlreadyInGroup(groupEntity.id, usersMmIds)
         val notInGroup = usersMmIds - alreadyInGroup
 
         groupsDao.removeFromGroup(groupEntity.id, alreadyInGroup)
-        groupsReconciliationService.reconcileUsers(alreadyInGroup)
+        reconciliationService.reconcileUsers(alreadyInGroup)
 
         return groupEditResponse(
             getGroupInfo(groupEntity),
@@ -186,6 +183,13 @@ class GroupsService(
             notInGroup,
             data
         )
+    }
+
+    suspend fun filterNotGroups(userMentionsIds: List<String>): List<String> {
+        val groupsNotUsers = groupsDao.findAllByMmIds(userMentionsIds)
+        val groupsIds = groupsNotUsers.map { it.mmId }.toSet()
+
+        return userMentionsIds.filter { it !in groupsIds }
     }
 
     private suspend fun getGroupInfo(groupEntity: GroupsRecord): GroupsResponses.GroupInfo {
@@ -229,16 +233,13 @@ class GroupsService(
             return groupEditHelp()
         }
 
-        val groupsNotUsers = groupsDao.findAllByMmIds(userMentionsIds)
-        val groupsIds = groupsNotUsers.map { it.mmId }.toSet()
-
-        val usersMmIds = userMentionsIds.filter { it !in groupsIds }
+        val usersMmIds = filterNotGroups(userMentionsIds)
 
         val alreadyInGroup = groupsDao.findUserMMIdsAlreadyInGroup(groupEntity.id, usersMmIds)
         val newToGroup = usersMmIds - alreadyInGroup
 
         groupsDao.addToGroup(groupEntity.id, newToGroup)
-        groupsReconciliationService.reconcileUsers(newToGroup)
+        reconciliationService.reconcileUsers(newToGroup)
 
         return groupEditResponse(
             getGroupInfo(groupEntity),
