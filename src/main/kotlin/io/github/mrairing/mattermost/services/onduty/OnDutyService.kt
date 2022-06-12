@@ -22,7 +22,7 @@ class OnDutyService(
 ) {
     private val log = logger { }
 
-    private val commandRegex = "((@$nameRegexStr\\s+)*|(?<nobody>nobody\\s+))for\\s+(?<keyword>[\\w\\p{Punct}]+)".toRegex()
+    private val commandRegex = "((@$nameRegexStr\\s+)*|(?<nobody>nobody\\s+))for\\s+(?<keyword>[\\w\\p{Punct}&&[^~]]+)".toRegex()
 
     suspend fun onDuty(data: WebhookCommandRequest): WebhookCommandResponse {
         val text = data.text.trim()
@@ -94,7 +94,7 @@ class OnDutyService(
                |Examples:
                |  1. `/on-duty for hello` - you will be notified when someone mentions `hello` word
                |  2. `/on-duty @user1 for alert` - user1 will be notified when someone mentions `alert`
-               |  3. `/on-duty @user1 @user2 for ~channel-name` - user1 and user2 will be notified when someone mentions channel with name `channel-name`
+               |  3. `/on-duty @user1 @user2 for example` - user1 and user2 will be notified when someone mentions `example`
                |  3. `/on-duty nobody for alert` - clear on duty status for keyword `alert`
             """.trimMargin()
         )
