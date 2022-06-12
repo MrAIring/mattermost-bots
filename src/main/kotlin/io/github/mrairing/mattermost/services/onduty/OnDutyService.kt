@@ -22,13 +22,16 @@ class OnDutyService(
 ) {
     private val log = logger { }
 
-    private val commandRegex = "((@$nameRegexStr\\s+)*|(?<nobody>nobody\\s+))for\\s+(?<keyword>[\\w\\p{Punct}&&[^~]]+)".toRegex()
+    private val commandRegex = "(?<status>status)|(((@$nameRegexStr\\s+)*|(?<nobody>nobody\\s+))for\\s+(?<keyword>[\\w\\p{Punct}&&[^~]]+))".toRegex()
 
     suspend fun onDuty(data: WebhookCommandRequest): WebhookCommandResponse {
         val text = data.text.trim()
         val matchResult = commandRegex.matchEntire(text)
 
         return if (matchResult != null) {
+            if (matchResult.groups["status"] != null) {
+                return onDutyStatus()
+            }
             val keyword = matchResult.groups["keyword"]!!.value.trim()
             val userOrGroupsIds = if (matchResult.groups["nobody"] != null) {
                 emptyList()
@@ -43,6 +46,25 @@ class OnDutyService(
         } else {
             onDutyHelp()
         }
+    }
+
+    private suspend fun onDutyStatus(): WebhookCommandResponse {
+        val userIdsByKeyword = onDutyDao.findAllUserIdsGroupedByKeywords()
+        val userIds = userIdsByKeyword.values.flatten().distinct()
+        val usersByIds = if (userIds.isNotEmpty()) {
+            usersClient.getUsersByIds(userIds).associateBy { it.id }
+        } else {
+            emptyMap()
+        }
+
+        val stringBuilder = StringBuilder("All users and keywords for on-duty:\n")
+
+        userIdsByKeyword.forEach { (keyword, users) ->
+            val usernameList = users.joinToString(separator = ", ") { "@${usersByIds[it]?.username}" }
+            stringBuilder.append("* $keyword: $usernameList\n")
+        }
+
+        return ephemeralResponse(stringBuilder.toString())
     }
 
     private suspend fun onDutyForUsers(userOrGroupsIds: List<String>, keyword: String): WebhookCommandResponse {
@@ -96,6 +118,7 @@ class OnDutyService(
                |  2. `/on-duty @user1 for alert` - user1 will be notified when someone mentions `alert`
                |  3. `/on-duty @user1 @user2 for example` - user1 and user2 will be notified when someone mentions `example`
                |  3. `/on-duty nobody for alert` - clear on duty status for keyword `alert`
+               |  3. `/on-duty status` - shows on duty status for all keywords
             """.trimMargin()
         )
     }

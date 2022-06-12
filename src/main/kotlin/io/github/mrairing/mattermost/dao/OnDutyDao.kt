@@ -59,4 +59,15 @@ class OnDutyDao(private val db: DSLContext) {
             .map { it.value1() }
             .toSet()
     }
+
+    suspend fun findAllUserIdsGroupedByKeywords(): Map<String, List<String>> {
+        return db.select(ON_DUTY.KEYWORD, ON_DUTY.USER_MM_ID)
+            .from(ON_DUTY)
+            .asFlow()
+            .toList()
+            .groupBy(
+                { it.value1() },
+                { it.value2() }
+            )
+    }
 }
