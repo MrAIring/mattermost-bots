@@ -33,7 +33,7 @@ class GroupsDao(private val db: DSLContext) {
             .awaitFirstOrNull()
     }
 
-    suspend fun findAllByMmIds(mmIds: List<String>): List<GroupsRecord> {
+    suspend fun findAllByMmIds(mmIds: Collection<String>): List<GroupsRecord> {
         return db.selectFrom(GROUPS)
             .where(GROUPS.MM_ID.`in`(mmIds))
             .asFlow()

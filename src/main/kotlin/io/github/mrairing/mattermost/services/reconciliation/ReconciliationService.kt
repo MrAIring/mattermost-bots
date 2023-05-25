@@ -24,6 +24,32 @@ class ReconciliationService(
     fun reconcile() {
         runBlocking {
             reconcileUsers()
+            reconcileGroups()
+        }
+    }
+
+    suspend fun reconcileGroups(groupMmIds: Collection<String>? = null) {
+        val groups = if (groupMmIds != null) {
+            groupsDao.findAllByMmIds(groupMmIds)
+        } else {
+            groupsDao.findAll()
+        }
+
+        groups.forEach { group ->
+            val usersInGroupIds = groupsDao.findAllUsersMMIds(group.id)
+            val users = if (usersInGroupIds.isEmpty())
+                emptyList()
+            else
+                usersClient.getUsersByIds(usersInGroupIds)
+
+            val description = users
+                .map { it.username }
+                .sortedBy { it }
+                .joinToString(" ") { "@${it}" }
+
+            log.info { "Update '${group.name}' description to '$description'" }
+
+            usersClient.patchUser(group.mmId, UserPatchRequest(position = description))
         }
     }
 

@@ -174,6 +174,7 @@ class GroupsService(
 
         groupsDao.removeFromGroup(groupEntity.id, alreadyInGroup)
         reconciliationService.reconcileUsers(alreadyInGroup)
+        reconciliationService.reconcileGroups(listOf(groupEntity.mmId))
 
         return groupEditResponse(
             getGroupInfo(groupEntity),
@@ -240,6 +241,7 @@ class GroupsService(
 
         groupsDao.addToGroup(groupEntity.id, newToGroup)
         reconciliationService.reconcileUsers(newToGroup)
+        reconciliationService.reconcileGroups(listOf(groupEntity.mmId))
 
         return groupEditResponse(
             getGroupInfo(groupEntity),
