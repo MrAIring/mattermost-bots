@@ -46,6 +46,13 @@ class ReconciliationService(
                 .map { it.username }
                 .sortedBy { it }
                 .joinToString(" ") { "@${it}" }
+                .run {
+                    if (length > 128) {
+                        substring(0, 124) + "..."
+                    } else {
+                        this
+                    }
+                }
 
             log.info { "Update '${group.name}' description to '$description'" }
 
