@@ -15,6 +15,7 @@ flyway:
   datasources:
     default:
       enabled: true
+      validate-on-migrate: false # https://github.com/flyway/flyway/issues/3431
 db:
   file: ./data/mmbots
 datasources:
