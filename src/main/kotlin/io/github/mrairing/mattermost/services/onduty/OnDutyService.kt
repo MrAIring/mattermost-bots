@@ -36,7 +36,7 @@ class OnDutyService(
             val userOrGroupsIds = if (matchResult.groups["nobody"] != null) {
                 emptyList()
             } else {
-                if (data.userMentionsIds.isNullOrEmpty())
+                if (data.userMentionsIds.isNullOrEmpty() || listOf(keyword) == data.userMentions)
                     listOf(data.userId)
                 else
                     data.userMentionsIds
