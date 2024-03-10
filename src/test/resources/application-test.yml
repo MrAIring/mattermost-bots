@@ -1,7 +1,0 @@
-mattermost:
-  base-url: http://localhost:8065
-  team-id: 63rncn6s5bfdbmdncug1h845xc
-  auth:
-    token: rbzw8n5wip8oxgiqgo57wydbfw
-webhook:
-  base-url: http://172.17.0.1:8080

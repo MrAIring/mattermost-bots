@@ -1,41 +1,9 @@
-micronaut:
+spring:
   application:
     name: mattermostBots
-netty:
-  default:
-    allocator:
-      max-order: 3
-
-jackson:
-  module-scan: false
-  deserialization:
-    READ_DATE_TIMESTAMPS_AS_NANOSECONDS: false
-flyway:
-  enabled: true
-  datasources:
-    default:
-      enabled: true
-      validate-on-migrate: false # https://github.com/flyway/flyway/issues/3431
-db:
-  file: ./data/mmbots
-datasources:
-  default:
-    url: 'jdbc:h2:${db.file}'
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: ''
-    maximum-pool-size: 2
-    minimumIdle: 0
-r2dbc:
-  datasources:
-    default:
-      url: r2dbc:h2:file:///${db.file}
-      username: sa
-      password: ''
-jooq:
-  r2dbc-datasources:
-    default:
-      sql-dialect: H2
+  jackson:
+    deserialization:
+      read-date-timestamps-as-nanoseconds: false
 
 webhook:
   base-url:
